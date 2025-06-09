@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  relay:
+    build: .
+    ports:
+      - "3334:3334"
+    environment:
+      - PORT=3334
+      - DATABASE_URL=postgres://nark:narkpass@postgres:5432/nark_archival?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - nark-network
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=nark
+      - POSTGRES_PASSWORD=narkpass
+      - POSTGRES_DB=nark_archival
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - nark-network
+
+volumes:
+  postgres_data:
+
+networks:
+  nark-network:
+    driver: bridge
