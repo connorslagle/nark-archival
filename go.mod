@@ -1,4 +1,4 @@
-module github.com/yourusername/nark-archival
+module github.com/connorslagle/nark-archival
 
 go 1.21.4
 
