@@ -18,7 +18,7 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 	_ "github.com/lib/pq"
 	
-	"github.com/yourusername/nark-archival/internal/policies"
+	"github.com/connorslagle/nark-archival/internal/policies"
 )
 
 const (
@@ -206,7 +206,7 @@ func main() {
 	relay.Info.PubKey = ""
 	relay.Info.Contact = "admin@nark-archive.org"
 	relay.Info.SupportedNIPs = []int{1, 11, 78}
-	relay.Info.Software = "https://github.com/yourusername/nark-archival"
+	relay.Info.Software = "https://github.com/connorslagle/nark-archival"
 	relay.Info.Version = "0.1.0"
 
 	// Configure storage backend with policy enforcement

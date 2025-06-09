@@ -58,7 +58,7 @@ Supports specialized academic event kinds (31428-31432):
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/nark-archival
+git clone https://github.com/connorslagle/nark-archival
 cd nark-archival
 ```
 
@@ -130,7 +130,7 @@ The project uses GitHub Actions for automated testing:
 
 ```bash
 # Clone and enter directory
-git clone https://github.com/yourusername/nark-archival
+git clone https://github.com/connorslagle/nark-archival
 cd nark-archival
 
 # Install dependencies
