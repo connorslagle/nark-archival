@@ -9,9 +9,11 @@ services:
       - PORT=3334
       - DATABASE_URL=postgres://nark:narkpass@postgres:5432/nark_archival?sslmode=disable
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - nark-network
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
@@ -25,6 +27,12 @@ services:
       - "5432:5432"
     networks:
       - nark-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nark -d nark_archival"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   postgres_data:
