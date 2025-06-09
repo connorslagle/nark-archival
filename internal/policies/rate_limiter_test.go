@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/nbd-wtf/go-nostr"
 )
 
 func TestMemoryRateLimiter(t *testing.T) {
