@@ -25,20 +25,20 @@ graph TB
     end
 
     subgraph "NOSTR Event Types"
-        E1[📄 Paper (31428)]
-        E2[🔗 Citation (31429)]
-        E3[📝 Review (31430)]
-        E4[📊 Data (31431)]
-        E5[💬 Discussion (31432)]
-        E6[💵 Funding (9735)]
-        E7[🏷️ Reputation (30078)]
-        E8[📝 Updates (31433)]
-        E9[❓ Questions (31434)]
-        E10[🤝 Mentorship (31435)]
-        E11[💡 Proposals (31436)]
-        E12[📈 Progress (31437)]
-        E13[🔬 Citizen Sci (31438)]
-        E14[📰 Media (31439)]
+        E1["📄 Paper (31428)"];
+        E2["🔗 Citation (31429)"];
+        E3["📝 Review (31430)"];
+        E4["📊 Data (31431)"];
+        E5["💬 Discussion (31432)"];
+        E6["💵 Funding (9735)"];
+        E7["🏷️ Reputation (30078)"];
+        E8["📝 Updates (31433)"];
+        E9["❓ Questions (31434)"];
+        E10["🤝 Mentorship (31435)"];
+        E11["💡 Proposals (31436)"];
+        E12["📈 Progress (31437)"];
+        E13["🔬 Citizen Sci (31438)"];
+        E14["📰 Media (31439)"];
     end
 
     subgraph "NARK Archival Relays"
