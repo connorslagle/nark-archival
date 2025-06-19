@@ -6,6 +6,17 @@ A NOSTR archival relay for academic content built using the Khatru framework.
 
 NARK (NOSTR Academic Repository Kit) Archival is a specialized NOSTR relay designed for long-term preservation of academic content. It provides a permanent, decentralized storage solution for scholarly communications, research data, and academic discourse on the NOSTR protocol.
 
+The NARK protocol enables researchers to publish and collaborate outside traditional academic institutions, removing gatekeepers and paywalls while maintaining rigorous peer review standards.
+
+## 📚 Documentation
+
+- 📊 **[Protocol Architecture](docs/architecture.md)** - Full system design with component details
+- 🔄 **[Protocol Overview](docs/protocol-overview.md)** - Simplified flow diagram
+- 💡 **[Use Cases](docs/use-cases.md)** - Real-world scenarios and benefits
+- 👥 **[User Perspectives](docs/user-perspectives.md)** - Analysis from each user type's viewpoint
+- 🗺️ **[Implementation Roadmap](docs/implementation-roadmap.md)** - Future development plans
+- 📋 **[Quick Reference](docs/quick-reference.md)** - Event types and commands
+
 ## Features
 
 ### Core Features
