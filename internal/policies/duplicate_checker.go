@@ -27,7 +27,7 @@ type DefaultContentHasher struct{}
 // GenerateHash creates a deterministic hash for duplicate detection
 func (h *DefaultContentHasher) GenerateHash(event *nostr.Event) string {
 	// For papers, hash title + authors + abstract
-	if event.Kind == AcademicPaperKind {
+	if event.Kind == PaperKind {
 		return h.hashPaper(event)
 	}
 	
@@ -90,7 +90,7 @@ func (h *DefaultContentHasher) hashPaper(event *nostr.Event) string {
 // PreventDuplicatePapers checks if a paper already exists based on content hash
 func PreventDuplicatePapers(ctx context.Context, event *nostr.Event, checker DuplicateChecker) error {
 	// Only check for papers and data
-	if event.Kind != AcademicPaperKind && event.Kind != AcademicDataKind {
+	if event.Kind != PaperKind && event.Kind != DataKind {
 		return nil
 	}
 	
@@ -100,7 +100,7 @@ func PreventDuplicatePapers(ctx context.Context, event *nostr.Event, checker Dup
 	}
 	
 	if isDuplicate {
-		if event.Kind == AcademicPaperKind {
+		if event.Kind == PaperKind {
 			return fmt.Errorf("duplicate paper detected: a paper with the same title, authors, and abstract already exists in the archive")
 		}
 		return fmt.Errorf("duplicate research data detected: this dataset already exists in the archive")

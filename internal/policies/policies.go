@@ -51,14 +51,14 @@ func (pe *PolicyEngine) ValidateEvent(ctx context.Context, event *nostr.Event) e
 	}
 	
 	// 3. Check for duplicates (papers and data only)
-	if event.Kind == AcademicPaperKind || event.Kind == AcademicDataKind {
+	if event.Kind == PaperKind || event.Kind == DataKind {
 		if err := PreventDuplicatePapers(ctx, event, pe.duplicateChecker); err != nil {
 			return fmt.Errorf("duplicate prevention: %w", err)
 		}
 	}
 	
 	// 4. Validate review integrity (reviews only)
-	if event.Kind == AcademicReviewKind {
+	if event.Kind == ReviewKind {
 		if err := ValidateReviewIntegrity(ctx, event, pe.paperStore); err != nil {
 			return fmt.Errorf("review policy: %w", err)
 		}
@@ -75,7 +75,7 @@ func (pe *PolicyEngine) PostProcessEvent(ctx context.Context, event *nostr.Event
 	}
 	
 	// Store content hash for duplicate detection
-	if event.Kind == AcademicPaperKind || event.Kind == AcademicDataKind {
+	if event.Kind == PaperKind || event.Kind == DataKind {
 		hasher := &DefaultContentHasher{}
 		hash := hasher.GenerateHash(event)
 		if err := pe.duplicateChecker.StoreHash(ctx, event, hash); err != nil {
@@ -94,17 +94,17 @@ func (pe *PolicyEngine) GetPolicyInfo() map[string]interface{} {
 		"rate_limits": map[string]interface{}{
 			"general": fmt.Sprintf("%d events per %v", config.EventsPerWindow, config.WindowDuration),
 			"papers": fmt.Sprintf("%d per %v", 
-				config.KindLimits[AcademicPaperKind].EventsPerWindow,
-				config.KindLimits[AcademicPaperKind].WindowDuration),
+				config.KindLimits[PaperKind].EventsPerWindow,
+				config.KindLimits[PaperKind].WindowDuration),
 			"reviews": fmt.Sprintf("%d per %v",
-				config.KindLimits[AcademicReviewKind].EventsPerWindow,
-				config.KindLimits[AcademicReviewKind].WindowDuration),
+				config.KindLimits[ReviewKind].EventsPerWindow,
+				config.KindLimits[ReviewKind].WindowDuration),
 			"data": fmt.Sprintf("%d per %v",
-				config.KindLimits[AcademicDataKind].EventsPerWindow,
-				config.KindLimits[AcademicDataKind].WindowDuration),
+				config.KindLimits[DataKind].EventsPerWindow,
+				config.KindLimits[DataKind].WindowDuration),
 			"discussions": fmt.Sprintf("%d per %v",
-				config.KindLimits[AcademicDiscussionKind].EventsPerWindow,
-				config.KindLimits[AcademicDiscussionKind].WindowDuration),
+				config.KindLimits[DiscussionKind].EventsPerWindow,
+				config.KindLimits[DiscussionKind].WindowDuration),
 		},
 		"content_requirements": map[string]interface{}{
 			"papers": []string{

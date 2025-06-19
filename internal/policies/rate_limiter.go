@@ -37,19 +37,19 @@ func DefaultRateLimitConfig() *RateLimitConfig {
 		EventsPerWindow: 100, // General limit
 		WindowDuration:  time.Hour,
 		KindLimits: map[int]KindLimit{
-			AcademicPaperKind: {
+			PaperKind: {
 				EventsPerWindow: 5, // Max 5 papers per day
 				WindowDuration:  24 * time.Hour,
 			},
-			AcademicReviewKind: {
+			ReviewKind: {
 				EventsPerWindow: 10, // Max 10 reviews per day
 				WindowDuration:  24 * time.Hour,
 			},
-			AcademicDataKind: {
+			DataKind: {
 				EventsPerWindow: 10, // Max 10 datasets per day
 				WindowDuration:  24 * time.Hour,
 			},
-			AcademicDiscussionKind: {
+			DiscussionKind: {
 				EventsPerWindow: 50, // More lenient for discussions
 				WindowDuration:  time.Hour,
 			},
@@ -199,16 +199,22 @@ func filterTimestamps(timestamps []time.Time, now time.Time, window time.Duratio
 // getEventTypeName returns human-readable event type names
 func getEventTypeName(kind int) string {
 	switch kind {
-	case AcademicPaperKind:
+	case PaperKind:
 		return "academic papers"
-	case AcademicCitationKind:
+	case CitationKind:
 		return "citations"
-	case AcademicReviewKind:
+	case ReviewKind:
 		return "peer reviews"
-	case AcademicDataKind:
+	case DataKind:
 		return "research data"
-	case AcademicDiscussionKind:
+	case DiscussionKind:
 		return "discussions"
+	case QuestionKind:
+		return "questions"
+	case ProposalKind:
+		return "funding proposals"
+	case ProgressKind:
+		return "progress reports"
 	default:
 		return "events"
 	}

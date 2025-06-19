@@ -7,30 +7,58 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-const (
-	// Academic event kinds
-	AcademicPaperKind      = 31428
-	AcademicCitationKind   = 31429
-	AcademicReviewKind     = 31430
-	AcademicDataKind       = 31431
-	AcademicDiscussionKind = 31432
-)
+// Event kinds are now defined in nip_compliant_kinds.go
+// Using the NIP-compliant constants from that file
 
 // ValidateAcademicEvent verifies required tags based on event kind
 func ValidateAcademicEvent(event *nostr.Event) error {
+	// First check if it's an academic event
+	if !IsAcademicKind(event.Kind) {
+		return fmt.Errorf("invalid academic event kind: %d (%s)", event.Kind, GetKindName(event.Kind))
+	}
+
+	// Check for d-tag on addressable events
+	if RequiresDTag(event.Kind) {
+		hasDTag := false
+		for _, tag := range event.Tags {
+			if len(tag) >= 2 && tag[0] == "d" && tag[1] != "" {
+				hasDTag = true
+				break
+			}
+		}
+		if !hasDTag {
+			return fmt.Errorf("%s requires a 'd' tag for addressable event identification", GetKindName(event.Kind))
+		}
+	}
+
+	// Validate based on specific kind
 	switch event.Kind {
-	case AcademicPaperKind:
+	case PaperKind:
 		return validatePaper(event)
-	case AcademicCitationKind:
+	case CitationKind:
 		return validateCitation(event)
-	case AcademicReviewKind:
+	case ReviewKind:
 		return validateReview(event)
-	case AcademicDataKind:
+	case DataKind:
 		return validateData(event)
-	case AcademicDiscussionKind:
+	case DiscussionKind:
 		return validateDiscussion(event)
+	case QuestionKind:
+		return validateQuestion(event)
+	case PaperUpdateKind:
+		return validatePaperUpdate(event)
+	case MentorshipKind:
+		return validateMentorship(event)
+	case ProposalKind:
+		return validateProposal(event)
+	case ProgressKind:
+		return validateProgress(event)
+	case CitizenProjKind:
+		return validateCitizenProject(event)
+	case MediaSummaryKind:
+		return validateMediaSummary(event)
 	default:
-		return fmt.Errorf("invalid academic event kind: %d. Only kinds 31428-31432 are accepted", event.Kind)
+		return fmt.Errorf("validation not implemented for kind %d", event.Kind)
 	}
 }
 
@@ -217,6 +245,240 @@ func validateDiscussion(event *nostr.Event) error {
 
 	if contentLength < 50 {
 		return fmt.Errorf("discussion content too short: must provide at least 50 characters for meaningful academic discourse")
+	}
+
+	return nil
+}
+
+// validateQuestion ensures questions are properly formatted
+func validateQuestion(event *nostr.Event) error {
+	hasReference := false
+	hasQuestionType := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "e", "a":
+				hasReference = true
+			case "question-type":
+				hasQuestionType = true
+			}
+		}
+	}
+
+	if !hasReference {
+		return fmt.Errorf("question must reference a paper or discussion: missing 'e' or 'a' tag")
+	}
+
+	if !hasQuestionType {
+		return fmt.Errorf("question must specify type: missing 'question-type' tag (methodology/clarification/data/theory)")
+	}
+
+	if len(strings.TrimSpace(event.Content)) < 20 {
+		return fmt.Errorf("question too short: must be at least 20 characters")
+	}
+
+	return nil
+}
+
+// validatePaperUpdate ensures paper updates reference the original
+func validatePaperUpdate(event *nostr.Event) error {
+	hasOriginal := false
+	hasVersion := false
+	hasChanges := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "e":
+				hasOriginal = true
+			case "version":
+				hasVersion = true
+			case "changes":
+				hasChanges = true
+			}
+		}
+	}
+
+	if !hasOriginal {
+		return fmt.Errorf("paper update must reference original: missing 'e' tag to original paper")
+	}
+
+	if !hasVersion {
+		return fmt.Errorf("paper update must specify version: missing 'version' tag")
+	}
+
+	if !hasChanges {
+		return fmt.Errorf("paper update must describe changes: missing 'changes' tag")
+	}
+
+	return nil
+}
+
+// validateMentorship ensures mentorship offers/requests are complete
+func validateMentorship(event *nostr.Event) error {
+	hasMentorType := false
+	hasFields := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "mentor-type":
+				hasMentorType = true
+				if tag[1] != "offer" && tag[1] != "request" {
+					return fmt.Errorf("mentor-type must be 'offer' or 'request', got '%s'", tag[1])
+				}
+			case "fields":
+				hasFields = true
+			}
+		}
+	}
+
+	if !hasMentorType {
+		return fmt.Errorf("mentorship must specify type: missing 'mentor-type' tag (offer/request)")
+	}
+
+	if !hasFields {
+		return fmt.Errorf("mentorship must specify fields: missing 'fields' tag")
+	}
+
+	return nil
+}
+
+// validateProposal ensures funding proposals have required information
+func validateProposal(event *nostr.Event) error {
+	hasAmount := false
+	hasDuration := false
+	hasAbstract := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "funding-amount":
+				hasAmount = true
+			case "duration":
+				hasDuration = true
+			case "abstract":
+				hasAbstract = true
+				if len(tag[1]) < 50 {
+					return fmt.Errorf("proposal abstract too short: must be at least 50 characters")
+				}
+			}
+		}
+	}
+
+	if !hasAmount {
+		return fmt.Errorf("proposal must specify amount: missing 'funding-amount' tag")
+	}
+
+	if !hasDuration {
+		return fmt.Errorf("proposal must specify duration: missing 'duration' tag")
+	}
+
+	if !hasAbstract {
+		return fmt.Errorf("proposal must have abstract: missing 'abstract' tag")
+	}
+
+	return nil
+}
+
+// validateProgress ensures progress reports reference proposals
+func validateProgress(event *nostr.Event) error {
+	hasProposal := false
+	hasMilestone := false
+	hasCompletion := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "e", "a":
+				hasProposal = true
+			case "milestone":
+				hasMilestone = true
+			case "completion":
+				hasCompletion = true
+			}
+		}
+	}
+
+	if !hasProposal {
+		return fmt.Errorf("progress report must reference proposal: missing 'e' or 'a' tag")
+	}
+
+	if !hasMilestone {
+		return fmt.Errorf("progress report must specify milestone: missing 'milestone' tag")
+	}
+
+	if !hasCompletion {
+		return fmt.Errorf("progress report must specify completion: missing 'completion' tag")
+	}
+
+	return nil
+}
+
+// validateCitizenProject ensures citizen science projects have proper structure
+func validateCitizenProject(event *nostr.Event) error {
+	hasProjectType := false
+	hasRequirements := false
+	hasDataFormat := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "project-type":
+				hasProjectType = true
+			case "requirements":
+				hasRequirements = true
+			case "data-format":
+				hasDataFormat = true
+			}
+		}
+	}
+
+	if !hasProjectType {
+		return fmt.Errorf("citizen project must specify type: missing 'project-type' tag")
+	}
+
+	if !hasRequirements {
+		return fmt.Errorf("citizen project must specify requirements: missing 'requirements' tag")
+	}
+
+	if !hasDataFormat {
+		return fmt.Errorf("citizen project must specify data format: missing 'data-format' tag")
+	}
+
+	return nil
+}
+
+// validateMediaSummary ensures media summaries reference papers
+func validateMediaSummary(event *nostr.Event) error {
+	hasPaperRef := false
+	hasSummaryType := false
+	hasLanguage := false
+
+	for _, tag := range event.Tags {
+		if len(tag) >= 2 {
+			switch tag[0] {
+			case "e", "a":
+				hasPaperRef = true
+			case "summary-type":
+				hasSummaryType = true
+			case "language":
+				hasLanguage = true
+			}
+		}
+	}
+
+	if !hasPaperRef {
+		return fmt.Errorf("media summary must reference paper: missing 'e' or 'a' tag")
+	}
+
+	if !hasSummaryType {
+		return fmt.Errorf("media summary must specify type: missing 'summary-type' tag")
+	}
+
+	if !hasLanguage {
+		return fmt.Errorf("media summary must specify language: missing 'language' tag")
 	}
 
 	return nil

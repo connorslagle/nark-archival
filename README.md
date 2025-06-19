@@ -16,6 +16,7 @@ The NARK protocol enables researchers to publish and collaborate outside traditi
 - 👥 **[User Perspectives](docs/user-perspectives.md)** - Analysis from each user type's viewpoint
 - 🗺️ **[Implementation Roadmap](docs/implementation-roadmap.md)** - Future development plans
 - 📋 **[Quick Reference](docs/quick-reference.md)** - Event types and commands
+- ✅ **[NIP Compliance](docs/nip-compliance-analysis.md)** - NOSTR protocol compatibility analysis
 
 ## Features
 

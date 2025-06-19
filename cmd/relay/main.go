@@ -21,21 +21,20 @@ import (
 	"github.com/connorslagle/nark-archival/internal/policies"
 )
 
-const (
-	// Academic event kinds (NIP-78 range)
-	AcademicPaperKind       = 31428
-	AcademicCitationKind    = 31429
-	AcademicReviewKind      = 31430
-	AcademicDataKind        = 31431
-	AcademicDiscussionKind  = 31432
-)
-
+// academicKinds lists all supported academic event kinds
 var academicKinds = []int{
-	AcademicPaperKind,
-	AcademicCitationKind,
-	AcademicReviewKind,
-	AcademicDataKind,
-	AcademicDiscussionKind,
+	policies.CitationKind,
+	policies.ReviewKind,
+	policies.DiscussionKind,
+	policies.QuestionKind,
+	policies.PaperKind,
+	policies.DataKind,
+	policies.PaperUpdateKind,
+	policies.MentorshipKind,
+	policies.ProposalKind,
+	policies.ProgressKind,
+	policies.CitizenProjKind,
+	policies.MediaSummaryKind,
 }
 
 // PostgreSQLPaperStore adapts PostgreSQL backend for policy checks
@@ -205,9 +204,17 @@ func main() {
 	relay.Info.Description = "A permanent archival relay for academic content on NOSTR"
 	relay.Info.PubKey = ""
 	relay.Info.Contact = "admin@nark-archive.org"
-	relay.Info.SupportedNIPs = []int{1, 11, 78}
+	relay.Info.SupportedNIPs = []int{1, 9, 11, 25, 40, 57, 58}
 	relay.Info.Software = "https://github.com/connorslagle/nark-archival"
 	relay.Info.Version = "0.1.0"
+	relay.Info.Limitation = &khatru.RelayInformationLimitation{
+		MaxMessageLength: 65536,     // 64KB max message
+		MaxEventTags:     100,       // Max 100 tags per event
+		MinPrefix:        0,         // No prefix requirements
+		MaxLimit:         500,       // Max 500 events per query
+		AuthRequired:     false,     // No auth required (for now)
+		PaymentRequired:  false,     // No payment required (for now)
+	}
 
 	// Configure storage backend with policy enforcement
 	relay.StoreEvent = append(relay.StoreEvent, func(ctx context.Context, event *nostr.Event) error {
@@ -260,7 +267,25 @@ func main() {
 
 	// Implement retention policy - never delete academic events
 	relay.DeleteEvent = append(relay.DeleteEvent, func(ctx context.Context, event *nostr.Event) error {
-		return fmt.Errorf("deletion not allowed: this is a permanent archival relay for academic content")
+		// Return NIP-01 compliant error message
+		return fmt.Errorf("blocked: deletion not allowed on archival relay")
+	})
+	
+	// Handle deletion requests (NIP-09)
+	relay.RejectEvent = append(relay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
+		// Reject deletion request events
+		if event.Kind == 5 { // NIP-09 deletion request
+			return true, "blocked: deletion requests not accepted on archival relay"
+		}
+		
+		// Reject events with expiration tags (NIP-40)
+		for _, tag := range event.Tags {
+			if len(tag) >= 1 && tag[0] == "expiration" {
+				return true, "blocked: expiring events not allowed on archival relay"
+			}
+		}
+		
+		return false, ""
 	})
 
 	// Count events handler
@@ -331,12 +356,7 @@ func isAcademicEvent(event *nostr.Event) bool {
 
 // isAcademicKind checks if a kind is an academic kind
 func isAcademicKind(kind int) bool {
-	for _, k := range academicKinds {
-		if k == kind {
-			return true
-		}
-	}
-	return false
+	return policies.IsAcademicKind(kind)
 }
 
 // healthCheckHandler returns the health status of the relay

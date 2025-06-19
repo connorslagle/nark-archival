@@ -15,7 +15,7 @@ type PaperAuthorStore interface {
 
 // ValidateReviewIntegrity ensures reviews are not from paper authors (conflict of interest)
 func ValidateReviewIntegrity(ctx context.Context, event *nostr.Event, store PaperAuthorStore) error {
-	if event.Kind != AcademicReviewKind {
+	if event.Kind != ReviewKind {
 		return nil
 	}
 
@@ -176,7 +176,7 @@ func (s *InMemoryPaperStore) GetPaperAuthors(ctx context.Context, paperID string
 // StoreEvent stores an event (for testing)
 func (s *InMemoryPaperStore) StoreEvent(event *nostr.Event) {
 	s.events[event.ID] = event
-	if event.Kind == AcademicPaperKind {
+	if event.Kind == PaperKind {
 		s.authors[event.ID] = extractAuthorsFromEvent(event)
 	}
 }
